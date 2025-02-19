@@ -14,8 +14,8 @@ if (isset($_GET['search'])) {
     $search_query = $_GET['search'];
 }
 
-// Fetch all users based on search query
-$users = $conn->query("SELECT id, name, email, role FROM users WHERE name LIKE '%$search_query%' OR email LIKE '%$search_query%' OR role LIKE '%$search_query%'");
+// Fetch all users based on search query, including User ID search
+$users = $conn->query("SELECT id, name, email, role FROM users WHERE id LIKE '%$search_query%' OR name LIKE '%$search_query%' OR email LIKE '%$search_query%' OR role LIKE '%$search_query%'");
 
 // Handle delete user request
 if (isset($_GET['delete'])) {
@@ -81,7 +81,7 @@ if (isset($_GET['delete'])) {
 
             <!-- Search Bar -->
             <form method="GET" class="search-bar">
-                <input type="text" name="search" class="form-control" placeholder="Search by name, email, or role" value="<?= htmlspecialchars($search_query); ?>">
+                <input type="text" name="search" class="form-control" placeholder="Search by User ID, name, email, or role" value="<?= htmlspecialchars($search_query); ?>">
             </form>
 
             <!-- Table Container for Responsive Layout -->

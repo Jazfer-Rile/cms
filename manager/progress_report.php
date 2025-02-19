@@ -2,7 +2,7 @@
 session_start();
 include("../includes/config.php");
 
-// Redirect if not admin
+// Redirect if not manager
 if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "Manager") {
     header("Location: ../auth/login.php");
     exit();

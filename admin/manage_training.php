@@ -91,7 +91,7 @@ if (isset($_GET['delete'])) {
             <h2 class="mt-3 text-left">📚 Manage Training Programs</h2>
 
             <div class="mb-3">
-                <a href="add_training.php" class="btn btn-success">➕ Add Training</a>
+                <a href="add_training.php" class="btn btn-primary">➕ Add Training</a>
             </div>
 
             <div class="table-responsive shadow-sm p-3 bg-white rounded">
