@@ -8,8 +8,14 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "Admin") {
     exit();
 }
 
-// Fetch all users
-$users = $conn->query("SELECT id, name, email, role FROM users");
+// Handle the search query
+$search_query = "";
+if (isset($_GET['search'])) {
+    $search_query = $_GET['search'];
+}
+
+// Fetch all users based on search query
+$users = $conn->query("SELECT id, name, email, role FROM users WHERE name LIKE '%$search_query%' OR email LIKE '%$search_query%' OR role LIKE '%$search_query%'");
 
 // Handle delete user request
 if (isset($_GET['delete'])) {
@@ -55,6 +61,11 @@ if (isset($_GET['delete'])) {
                 margin-left: 0;
             }
         }
+        /* Search Bar Styling */
+        .search-bar {
+            width: 100%;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
@@ -67,6 +78,11 @@ if (isset($_GET['delete'])) {
         <div class="container">
             <h2 class="mt-3">👤 Manage Users</h2>
             <a href="add_user.php" class="btn btn-primary mb-3">➕ Add New User</a>
+
+            <!-- Search Bar -->
+            <form method="GET" class="search-bar">
+                <input type="text" name="search" class="form-control" placeholder="Search by name, email, or role" value="<?= htmlspecialchars($search_query); ?>">
+            </form>
 
             <!-- Table Container for Responsive Layout -->
             <div class="table-responsive">

@@ -1,111 +1,113 @@
 <?php
-// Start the session to access user login data
 session_start();
-
-// Include the database configuration file to establish a connection
 include("../includes/config.php");
 
-// Redirect user if they are not an Admin
+// Redirect if not admin
 if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "Admin") {
-    header("Location: ../auth/login.php"); // Redirect to login if unauthorized
+    header("Location: ../auth/login.php");
     exit();
 }
 
-// Check if the database connection is established
-if (!$conn) {
-    die("❌ Database connection failed: " . mysqli_connect_error());
-}
+// Fetch total users
+$total_users = $conn->query("SELECT COUNT(*) FROM users")->fetch_row()[0];
 
-// Initialize variables to prevent "undefined variable" warnings
-$total_users = $total_competencies = $total_trainings = 0;
+// Fetch total competencies
+$total_competencies = $conn->query("SELECT COUNT(*) FROM competencies")->fetch_row()[0];
 
-// Fetch total number of users
-$result = $conn->query("SELECT COUNT(*) FROM users");
-if ($result) {
-    $total_users = $result->fetch_row()[0]; // Get the count value
-} else {
-    echo "⚠️ Error fetching users: " . $conn->error;
-}
+// Fetch total training programs
+$total_trainings = $conn->query("SELECT COUNT(*) FROM training_programs")->fetch_row()[0];
 
-// Fetch total number of competencies
-$result = $conn->query("SELECT COUNT(*) FROM competencies");
-if ($result) {
-    $total_competencies = $result->fetch_row()[0]; // Get the count value
-} else {
-    echo "⚠️ Error fetching competencies: " . $conn->error;
-}
-
-// Fetch total number of training programs
-$result = $conn->query("SELECT COUNT(*) FROM training_programs");
-if ($result) {
-    $total_trainings = $result->fetch_row()[0]; // Get the count value
-} else {
-    echo "⚠️ Error fetching training programs: " . $conn->error;
-}
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <title>Admin Dashboard</title>
-    <!-- Link to Bootstrap CSS -->
     <link rel="stylesheet" href="../assets/css/bootstrap.min.css">
     <style>
-        /* Layout adjustments */
+        /* Sidebar & Content Layout */
         body {
             display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 250px;
+            position: fixed;
+            height: 100vh;
+            background-color: #343a40;
+            color: white;
+            padding-top: 10px;
         }
         .content {
-            margin-left: 260px; /* Space for sidebar */
-            width: 100%;
+            margin-left: 260px;
             padding: 20px;
+            width: 100%;
         }
+        /* Responsive Sidebar */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: relative;
+                height: auto;
+            }
+            .content {
+                margin-left: 0;
+            }
+        }
+        /* Dashboard Cards */
+        .dashboard-card {
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+        .users { background-color: #007bff; }
+        .competencies { background-color: #28a745; }
+        .trainings { background-color: #ffc107; }
     </style>
 </head>
 <body>
 
-    <!-- Include Sidebar Navigation -->
+    <!-- Include Sidebar -->
     <?php include("../includes/sidebar.php"); ?>
 
-    <!-- Main Content Section -->
+    <!-- Main Content -->
     <div class="content">
-        <h2>📊 Admin Dashboard</h2>
+        <div class="container">
+            <h2 class="mt-3">📊 Admin Dashboard</h2>
 
-        <!-- Dashboard Stats Cards -->
-        <div class="row">
-            <!-- Total Users Card -->
-            <div class="col-md-4">
-                <div class="card text-center shadow-sm">
-                    <div class="card-body">
+            <div class="row mt-4">
+                <!-- Total Users -->
+                <div class="col-md-4">
+                    <div class="dashboard-card users shadow-sm">
                         <h4>Total Users</h4>
-                        <h2 class="text-primary"><i class="bi bi-people"></i> <?= $total_users; ?></h2>
+                        <h2><?= $total_users; ?></h2>
                     </div>
                 </div>
-            </div>
 
-            <!-- Total Competencies Card -->
-            <div class="col-md-4">
-                <div class="card text-center shadow-sm">
-                    <div class="card-body">
+                <!-- Total Competencies -->
+                <div class="col-md-4">
+                    <div class="dashboard-card competencies shadow-sm">
                         <h4>Total Competencies</h4>
-                        <h2 class="text-success"><i class="bi bi-book"></i> <?= $total_competencies; ?></h2>
+                        <h2><?= $total_competencies; ?></h2>
+                    </div>
+                </div>
+
+                <!-- Total Training Programs -->
+                <div class="col-md-4">
+                    <div class="dashboard-card trainings shadow-sm">
+                        <h4>Total Training Programs</h4>
+                        <h2><?= $total_trainings; ?></h2>
                     </div>
                 </div>
             </div>
 
-            <!-- Total Training Programs Card -->
-            <div class="col-md-4">
-                <div class="card text-center shadow-sm">
-                    <div class="card-body">
-                        <h4>Total Training Programs</h4>
-                        <h2 class="text-warning"><i class="bi bi-mortarboard"></i> <?= $total_trainings; ?></h2>
-                    </div>
-                </div>
-            </div>
+            <!-- Add more dashboard widgets here -->
+
         </div>
     </div>
 
-    <!-- Link to Bootstrap JavaScript -->
     <script src="../assets/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -15,16 +15,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST["password"];
     $role = $_POST["role"];
 
-    // ✅ Hash the password before inserting
-    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-
-    // Insert into database
-    $stmt = $conn->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)");
-    $stmt->bind_param("ssss", $name, $email, $hashed_password, $role);
+    // Check if the email already exists in the database
+    $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
+    $stmt->bind_param("s", $email);
     $stmt->execute();
+    $stmt->store_result();
 
-    header("Location: manage_users.php");
-    exit();
+    if ($stmt->num_rows > 0) {
+        // Email already exists, show error message
+        $error_message = "The email is already registered. Please choose another email.";
+    } else {
+        // Generate a new user ID with 4 digits, starting from 0001
+        $id_query = $conn->query("SELECT MAX(id) AS max_id FROM users");
+        $result = $id_query->fetch_assoc();
+        $max_id = $result['max_id'];
+        $new_id = str_pad($max_id + 1, 4, '0', STR_PAD_LEFT); // Generate ID like 0001, 0002, ...
+
+        // ✅ Hash the password before inserting
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
+        // Insert into the database with the generated user ID
+        $stmt = $conn->prepare("INSERT INTO users (id, name, email, password, role) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("sssss", $new_id, $name, $email, $hashed_password, $role);
+        $stmt->execute();
+
+        // Redirect after successful insertion
+        header("Location: manage_users.php");
+        exit();
+    }
+} else {
+    // Generate the next available user ID on page load if the form is not submitted yet
+    $id_query = $conn->query("SELECT MAX(id) AS max_id FROM users");
+    $result = $id_query->fetch_assoc();
+    $max_id = $result['max_id'];
+    $new_id = str_pad($max_id + 1, 4, '0', STR_PAD_LEFT); // Generate ID like 0001, 0002, ...
 }
 ?>
 
@@ -74,7 +98,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="content">
         <div class="container">
             <h2 class="mt-3">➕ Add User</h2>
+
+            <!-- Error Message -->
+            <?php if (isset($error_message)) : ?>
+                <div class="alert alert-danger">
+                    <?= $error_message; ?>
+                </div>
+            <?php endif; ?>
+
+            <!-- User Form -->
             <form method="POST" class="p-4 shadow bg-white rounded">
+                <div class="mb-3">
+                    <label class="form-label">User ID:</label>
+                    <input type="text" name="user_id" class="form-control" value="<?= isset($new_id) ? $new_id : ''; ?>" readonly>
+                </div>
                 <div class="mb-3">
                     <label class="form-label">👤 Name:</label>
                     <input type="text" name="name" class="form-control" required>
